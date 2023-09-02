@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/iamarju/rss-aggregator/internal/database"
 	"github.com/joho/godotenv"
-	
+
 	_ "github.com/lib/pq"
 )
 
@@ -39,13 +39,12 @@ func main() {
 
 	if err != nil {
 		log.Fatal("Cannot connect to dabatase: %v", err)
-		
+
 	}
 
-	apiCgf := apiConfig {
+	apiCgf := apiConfig{
 		DB: database.New(conn),
 	}
-	
 
 	router := chi.NewRouter()
 
@@ -61,7 +60,8 @@ func main() {
 	v1Router := chi.NewRouter()
 	v1Router.Get("/healthz", handlerReadiness)
 	v1Router.Get("/err", handlerErr)
-	v1Router.Get("/users", apiCgf.handlerCreateUser)
+	v1Router.Get("/users", apiCgf.handlerGetUser)
+	v1Router.Post("/users", apiCgf.handlerCreateUser)
 	router.Mount("/v1", v1Router)
 
 	server := &http.Server{
@@ -69,7 +69,7 @@ func main() {
 		Addr:    ":" + portString,
 	}
 
-	log.Println("Server starting at port: %s", portString)
+	log.Printf("server starting at port: %s", portString)
 
 	error := server.ListenAndServe()
 
