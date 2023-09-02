@@ -10,9 +10,10 @@ import (
 	"github.com/iamarju/rss-aggregator/internal/database"
 )
 
-func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
+func (apiCfg *apiConfig) handlerCreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameter struct {
 		Name string `json:"name"`
+		Url  string `json:"url"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -24,11 +25,13 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	usr, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
+	feed, err := apiCfg.DB.CreateFeed(r.Context(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		Name:      params.Name,
+		Url:       params.Url,
+		UserID:    user.ID,
 	})
 
 	if err != nil {
@@ -36,10 +39,16 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	respondWithJson(w, 201, dbUserToUser(usr))
+	respondWithJson(w, 201, dbFeedToFeed(feed))
 
 }
 
-func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, user database.User) {
-	respondWithJson(w, 200, dbUserToUser(user))
+func (apiCfg *apiConfig) handlerGetFeed(w http.ResponseWriter, r *http.Request) {
+	feeds, err := apiCfg.DB.GetFeed(r.Context())
+	if err != nil {
+		responsdWithError(w, 400, fmt.Sprintf("Couldn't get feeds: %v", err))
+		return		
+	}
+	respondWithJson(w, 200, dbFeedsToFeeds(feeds))
 }
+

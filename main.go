@@ -60,8 +60,10 @@ func main() {
 	v1Router := chi.NewRouter()
 	v1Router.Get("/healthz", handlerReadiness)
 	v1Router.Get("/err", handlerErr)
-	v1Router.Get("/users", apiCgf.handlerGetUser)
+	v1Router.Get("/users", apiCgf.middlewareAuth(apiCgf.handlerGetUser))
 	v1Router.Post("/users", apiCgf.handlerCreateUser)
+	v1Router.Post("/feeds", apiCgf.middlewareAuth(apiCgf.handlerCreateFeed))
+	v1Router.Get("/feeds", apiCgf.handlerGetFeed)
 	router.Mount("/v1", v1Router)
 
 	server := &http.Server{
